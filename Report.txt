@@ -1,0 +1,220 @@
+Option Explicit
+
+Sub GenerateReport(strType As String, Optional strVendor As String)
+'update the report data using source data
+'create a new file and copy the report worksheet to the new report
+
+    Dim wb As Workbook
+    Set wb = Workbooks.Add
+    
+    Dim i As Integer
+
+'update data
+
+' Vendor Specific report================================================
+    If strType = "Vendor" Then
+        'generate vendor specific report
+        
+        'put vendor name in source sheet
+        Dim celcell As Range
+        For Each celcell In wsSource.Range("Vendor1")
+            celcell.Value = strVendor
+        Next
+        For Each celcell In wsSource.Range("Vendor2")
+            celcell.Value = strVendor
+        Next
+            
+        'generate vendor specific report
+        
+        ' report V1
+        With wsSource.Range("SourceV1")
+            .Sort key1:=.Item(3), order1:=xlDescending
+        End With
+        
+        wsSource.Range("SourceV1").Copy
+        wsReportV1.Range("ReportV1").PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+            :=False, Transpose:=False
+        wsReportV1.Range("B3") = strVendor
+            
+        ' report V2
+        With wsSource.Range("SourceV2")
+            .Sort key1:=.Item(3), order1:=xlDescending
+        End With
+        wsSource.Range("SourceV2").Copy
+        wsReportV2.Range("ReportV2").PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+            :=False, Transpose:=False
+        wsReportV2.Range("B3") = strVendor
+        
+        ' copy the template to the new workbook
+        wsReportV2.Copy after:=wb.Sheets(1)
+        wb.Sheets("ReportV2").Visible = True
+        
+        wsReportV1.Copy after:=wb.Sheets(1)
+        wb.Sheets("ReportV1").Visible = True
+        
+        wsVendor.Copy after:=wb.Sheets(1)
+        wb.Sheets("Vendor").Visible = True
+        
+        
+        Application.DisplayAlerts = False
+        wb.Sheets(1).Delete
+        Application.DisplayAlerts = True
+        
+        wb.Sheets("Vendor").Activate
+    
+        Exit Sub
+    End If
+    
+' Detail report================================================
+    If strType = "Detail" Then
+        'generate detail report
+        
+        'report 07
+            
+        For i = 0 To 23
+            With Range(wsSource07.Range("A1").Offset((i * 6) + 1, 0), wsSource07.Range("A1").Offset((i * 6) + 5, 2))
+                .Sort key1:=.Item(2), order1:=xlDescending
+            End With
+        Next
+    
+        wsSource07.Range("Source07").Copy
+        wsReport07.Range("Report07").PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+            :=False, Transpose:=False
+        
+        'report 08
+        For i = 0 To 4
+            With Range(wsSource08.Range("A1").Offset((i * 25) + 1, 0), wsSource08.Range("A1").Offset((i * 25) + 24, 2))
+                .Sort key1:=.Item(2), order1:=xlDescending
+            End With
+        Next
+        
+        wsSource08.Range("Source08").Copy
+        wsReport08.Range("Report08").PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+            :=False, Transpose:=False
+            
+        'report 09
+        
+        For i = 0 To 23
+            With Range(wsSource09.Range("A1").Offset((i * 4) + 1, 0), wsSource09.Range("A1").Offset((i * 4) + 3, 2))
+                .Sort key1:=.Item(2), order1:=xlDescending
+            End With
+        Next
+        
+        wsSource09.Range("Source09").Copy
+        wsReport09.Range("Report09").PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+            :=False, Transpose:=False
+            
+        'report 10
+        For i = 0 To 2
+            With Range(wsSource10.Range("A1").Offset((i * 25) + 1, 0), wsSource10.Range("A1").Offset((i * 25) + 24, 2))
+                .Sort key1:=.Item(2), order1:=xlDescending
+            End With
+        Next
+        
+        wsSource10.Range("Source10").Copy
+        wsReport10.Range("Report10").PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+            :=False, Transpose:=False
+        
+    
+        wsReport10.Copy after:=wb.Sheets(1)
+        wb.Sheets("Report10").Visible = True
+    
+        wsReport09.Copy after:=wb.Sheets(1)
+        wb.Sheets("Report09").Visible = True
+    
+        wsReport08.Copy after:=wb.Sheets(1)
+        wb.Sheets("Report08").Visible = True
+        
+        wsReport07.Copy after:=wb.Sheets(1)
+        wb.Sheets("Report07").Visible = True
+
+    End If
+    
+' Overview report================================================
+        
+        'report 01
+    With wsSource.Range("Source01")
+        .Sort key1:=.Item(5), order1:=xlDescending
+        .Copy
+    End With
+    wsReport01.Range("Report01").PasteSpecial (xlPasteValues)
+        
+        'report 02
+    With wsSource.Range("Source02")
+        .Copy
+    End With
+    wsReport02.Range("Report02").PasteSpecial (xlPasteValues)
+        
+    'report 03
+    With wsSource.Range("Source03")
+        .Copy
+    End With
+    wsReport03.Range("Report03").PasteSpecial (xlPasteValues)
+        
+        'report 04
+    With wsSource.Range("Source04")
+        .Copy
+    End With
+    wsReport04.Range("Report04").PasteSpecial (xlPasteValues)
+        
+        'report 05
+    With wsSource.Range("Source05")
+        .Sort key1:=.Item(3), order1:=xlDescending
+        .Copy
+    End With
+    wsReport05.Range("Report05").PasteSpecial (xlPasteValues)
+    
+        'report 06
+    With wsSource.Range("Source06")
+        .Sort key1:=.Item(5), order1:=xlDescending
+        .Copy
+    End With
+    wsReport06.Range("Report06").PasteSpecial (xlPasteValues)
+        
+
+
+    wsReport06.Copy after:=wb.Sheets(1)
+    wb.Sheets("Report06").Visible = True
+    
+
+    wsReport05.Copy after:=wb.Sheets(1)
+    wb.Sheets("Report05").Visible = True
+    
+
+    wsReport04.Copy after:=wb.Sheets(1)
+    wb.Sheets("Report04").Visible = True
+    
+    wsReport03.Copy after:=wb.Sheets(1)
+    wb.Sheets("Report03").Visible = True
+
+    wsReport02.Copy after:=wb.Sheets(1)
+    wb.Sheets("Report02").Visible = True
+    
+    wsReport01.Copy after:=wb.Sheets(1)
+    wb.Sheets("Report01").Visible = True
+    
+    If strType = "Overview" Then
+        wsOverview.Copy after:=wb.Sheets(1)
+        wb.Sheets("Overview").Visible = True
+    End If
+    
+    If strType = "Detail" Then
+        wsDetail.Copy after:=wb.Sheets(1)
+        wb.Sheets("Detail").Visible = True
+    End If
+        
+    Application.DisplayAlerts = False
+    wb.Sheets(1).Delete
+    Application.DisplayAlerts = True
+    
+    If strType = "Overview" Then
+        wb.Sheets("Overview").Activate
+    End If
+    
+    If strType = "Detail" Then
+        wb.Sheets("Detail").Activate
+    End If
+        
+End Sub
+
+

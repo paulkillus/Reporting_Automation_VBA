@@ -1,0 +1,83 @@
+Option Explicit
+
+Private Sub cmbCancel_Click()
+
+    Unload Me
+    
+End Sub
+
+Private Sub cmbGenerate_Click()
+'Generate report
+    
+    If optVendor.Value Then
+        If cmbVendor.Value = "Please Choose A Vendor" Then
+            MsgBox "Please Choose A Vendor!"
+            Exit Sub
+        End If
+        Call GenerateReport(strType:="Vendor", strVendor:=cmbVendor.Value)
+        Unload Me
+        Exit Sub
+    ElseIf optOverview.Value Then
+        Call GenerateReport(strType:="Overview")
+        Unload Me
+        Exit Sub
+    ElseIf optDetail.Value Then
+        Call GenerateReport(strType:="Detail")
+        Unload Me
+        Exit Sub
+    End If
+    
+    MsgBox ("Please choose a option to generate the report.")
+    
+End Sub
+
+Private Sub Label1_Click()
+
+End Sub
+
+Private Sub Label2_Click()
+
+End Sub
+
+Private Sub Label3_Click()
+
+End Sub
+
+Private Sub optDetail_Change()
+
+    If optDetail.Value Then
+        With cmbVendor
+            .Enabled = False
+            .Value = "Please Choose A Vendor"
+        End With
+        
+    End If
+
+End Sub
+
+
+Private Sub optOverview_Change()
+
+    If optOverview.Value Then
+        With cmbVendor
+            .Enabled = False
+            .Value = "Please Choose A Vendor"
+        End With
+        
+    End If
+
+End Sub
+
+
+Private Sub optVendor_Change()
+
+    If optVendor.Value Then
+        With cmbVendor
+            .Enabled = True
+            .Value = "Please Choose A Vendor"
+        End With
+        
+    End If
+
+End Sub
+

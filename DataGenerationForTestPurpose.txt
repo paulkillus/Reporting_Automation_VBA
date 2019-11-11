@@ -1,0 +1,249 @@
+Option Explicit
+
+Sub GenerateProductData()
+
+    Dim arrDescription(1 To 3) As String
+    Dim arrColor(1 To 8) As String
+    Dim arrGender(1 To 2) As String
+    Dim arrSize(1 To 3) As String
+
+    arrDescription(1) = "Jeans"
+    arrDescription(2) = "T shirt"
+    arrDescription(3) = "Shirt"
+
+    arrColor(1) = "Blue"
+    arrColor(2) = "Black"
+    arrColor(3) = "Green"
+    arrColor(4) = "Brown"
+    arrColor(5) = "Grey"
+    arrColor(6) = "White"
+    arrColor(7) = "Yellow"
+    arrColor(8) = "Red"
+
+    arrGender(1) = "Male"
+    arrGender(2) = "Female"
+
+    arrSize(1) = "Small"
+    arrSize(2) = "Medium"
+    arrSize(3) = "Large"
+
+    Dim d, c, g, s, r As Integer
+
+    For d = 1 To 3
+        For c = 1 To 8
+            For g = 1 To 2
+                For s = 1 To 3
+                    r = s + (d - 1) * 8 * 2 * 3 + (c - 1) * 2 * 3 + (g - 1) * 3
+                    wsProduct.Range("PProductDescription").Offset(r, 0) = arrDescription(d)
+                    wsProduct.Range("PColor").Offset(r, 0) = arrColor(c)
+                    wsProduct.Range("PGender").Offset(r, 0) = arrGender(g)
+                    wsProduct.Range("PSize").Offset(r, 0) = arrSize(s)
+                    wsProduct.Range("PProductID").Offset(r, 0) = "P" + CStr(d) + CStr(c) + CStr(g) + CStr(s)
+                Next
+            Next
+        Next
+    Next
+
+End Sub
+
+Sub GenerateVendorData()
+
+    Dim arrVendor(1 To 5) As String
+    arrVendor(1) = "Always On Time BVA"
+    arrVendor(2) = "Caveat Emptor LLC"
+    arrVendor(3) = "No Returns Ltd."
+    arrVendor(4) = "Cheaper by the dozen PLC"
+    arrVendor(5) = "Clothers Inc."
+    
+    Dim v, d As Integer
+    Dim BatchID As String
+    Dim DateOfProduction As Date
+    Dim i, p, s As Integer
+    Dim amount, r As Long
+    Dim ProductID As String
+    
+    r = 1
+    For v = 1 To 5
+        For d = 1 To 13
+            BatchID = "B" + CStr(v + 10) + CStr(d + 100)
+            If d >= 7 Then
+                DateOfProduction = CDate("2018-" + CStr(d - 6))
+            Else
+                DateOfProduction = CDate("2017-" + CStr(d + 6))
+            End If
+            s = Rnd() * 5
+            For i = 1 To s
+                p = Sqr(Rnd()) * 3 * 8 * 2 * 3 + 1
+                amount = CInt(Sqr(Rnd()) * 5)
+                amount = amount * 1000 + CInt(Rnd() * 10) * 100
+                wsVender.Range("VBatchID").Offset(r, 0) = BatchID
+                wsVender.Range("VVender").Offset(r, 0) = arrVendor(v)
+                wsVender.Range("VDateOfProduction").Offset(r, 0) = DateOfProduction
+                wsVender.Range("VProductID").Offset(r, 0) = wsProduct.Range("PProductID").Offset(p, 0)
+                wsVender.Range("VAmount").Offset(r, 0) = amount
+                If Rnd() > 0.1 Then
+                    wsVender.Range("VRefundable").Offset(r, 0) = "Refund"
+                Else
+                    wsVender.Range("VRefundable").Offset(r, 0) = "No Refund"
+                End If
+                r = r + 1
+            Next
+        Next
+    Next
+
+End Sub
+
+Sub GenerateCustomer()
+
+    Dim arrCity(1 To 5) As String
+    arrCity(1) = "Toronto"
+    arrCity(2) = "Vancouver"
+    arrCity(3) = "Calgary"
+    arrCity(4) = "Edmonton"
+    arrCity(5) = "Ottawa"
+    
+    Dim arrNumber(1 To 5) As String
+    arrNumber(1) = "1647"
+    arrNumber(2) = "1604"
+    arrNumber(3) = "1825"
+    arrNumber(4) = "1780"
+    arrNumber(5) = "1705"
+    
+    Dim i, city As Long
+    For i = 1 To CLng(Rnd * 60000)
+        city = CInt(Rnd * 4) + 1
+        wsCustomer.Range("A1").Offset(i, 0) = arrCity(city)
+        wsCustomer.Range("B1").Offset(i, 0) = arrNumber(city) + CStr(CInt(Rnd * 9)) + CStr(CInt(Rnd * 9)) + CStr(CInt(Rnd * 9)) + CStr(CInt(Rnd * 9)) + CStr(CInt(Rnd * 9)) + CStr(CInt(Rnd * 9)) + CStr(CInt(Rnd * 9))
+    Next
+    
+End Sub
+
+Sub GenerateOrder()
+    
+    Dim dtOrderDate As Date
+    Dim lngNumOfOrders, NumOfOrders As Long
+    Dim lngOrderSize, OrderSize As Long
+    Dim lngCustomerID As Long
+    Dim rngBatch As Range
+    Dim lngOrder As Long
+    Dim r As Long
+    Dim rngProduct As Range
+    r = 0
+    
+    Dim arrChannel(1 To 5) As String
+    arrChannel(1) = "Amazon"
+    arrChannel(2) = "Company Website"
+    arrChannel(3) = "Shopify"
+    arrChannel(4) = "ASOS"
+    arrChannel(5) = "Walmart"
+    
+    Dim lngChannel As Long
+    Dim blStockOut As Boolean
+    
+    
+    dtOrderDate = CDate("2017-7-19")
+    blStockOut = False
+    
+    Do While dtOrderDate < CDate("2018-07-18")
+        ' generate this day's order
+        
+        'decide how many orders today
+        lngNumOfOrders = CLng(Rnd * 300)
+        lngOrder = 0
+        
+        Do While lngOrder < lngNumOfOrders And Not blStockOut
+            ' pick a customer randomly
+            lngCustomerID = CLng(Rnd * 10000)
+            
+            ' decide the order size
+            lngOrderSize = CLng(Sqr(Rnd * 10))
+            
+            ' decide the channel
+            lngChannel = CLng(Rnd * 4 + 1)
+            
+            ' pick product from inventory
+            OrderSize = 0
+            Do While OrderSize < lngOrderSize And Not blStockOut
+                    'find a product with inventory
+                    'if no inventory then exit loop
+'#####
+'REMINDER = hard code value here
+'#####
+                    blStockOut = True
+                    For Each rngBatch In wsVender.Range("A2:A165")
+                    
+                        If CDate(rngBatch.Offset(0, 2)) > dtOrderDate Then
+                            Exit For
+                        End If
+                        
+                        If rngBatch.Offset(0, 6).Value > 0 Then
+                    'decide whether pick or not
+                            blStockOut = False
+                            If Rnd > 0.9 Then
+                    'if picked ordersize = ordersize+1
+                    ' inventory -1
+                                OrderSize = OrderSize + 1
+                                lngOrder = lngOrder + 1
+                                r = r + 1
+                                rngBatch.Offset(0, 6) = rngBatch.Offset(0, 6).Value - 1
+                    'write down the order
+                    wsSales.Range("SOrderId").Offset(r, 0) = Left(wsCustomer.Range("A1").Offset(lngCustomerID, 0), 1) + Format(dtOrderDate, "yymmdd") + Format(lngOrder - OrderSize, "0000")
+                    wsSales.Range("SDateOfSale").Offset(r, 0) = dtOrderDate
+                    
+                    wsSales.Range("SBatchNo").Offset(r, 0) = rngBatch.Value
+                    wsSales.Range("SProductID").Offset(r, 0) = rngBatch.Offset(0, 3).Value
+                    wsSales.Range("SVender").Offset(r, 0) = rngBatch.Offset(0, 1).Value
+                    wsSales.Range("SRefund").Offset(r, 0) = rngBatch.Offset(0, 5).Value
+                    
+                    Set rngProduct = wsProduct.Range("A:A").Find(rngBatch.Offset(0, 3).Value, LookIn:=xlValues)
+                    
+                    wsSales.Range("SProductDescription").Offset(r, 0) = rngProduct.Offset(0, 1).Value
+                    wsSales.Range("SColor").Offset(r, 0) = rngProduct.Offset(0, 2).Value
+                    wsSales.Range("SGender").Offset(r, 0) = rngProduct.Offset(0, 3).Value
+                    wsSales.Range("SSize").Offset(r, 0) = rngProduct.Offset(0, 4).Value
+                    
+                    wsSales.Range("SChannel").Offset(r, 0) = arrChannel(lngChannel)
+                    
+                    
+                    wsSales.Range("SCity").Offset(r, 0) = wsCustomer.Range("A1").Offset(lngCustomerID, 0)
+                    wsSales.Range("SPhoneNumber").Offset(r, 0) = wsCustomer.Range("B1").Offset(lngCustomerID, 0)
+                            End If
+                        End If
+    
+                    Next
+    
+            Loop
+            
+        Loop
+    
+        'finish today's order
+        dtOrderDate = DateAdd("d", 1, dtOrderDate)
+        blStockOut = False
+        
+    Loop
+
+End Sub
+
+Sub GenerateReturn()
+
+    Dim s, r, i, j, reason As Long
+    
+    r = 1
+    s = 1
+    
+    For i = 1 To 435
+        s = s + CLng(Rnd * 100 + 1)
+        If r > 51258 Then
+            Exit For
+        End If
+        reason = CLng((Rnd * 23) + 1)
+        For j = 0 To 12
+            wsReturn.Range("A1").Offset(r, j) = wsSales.Range("A1").Offset(s, j)
+        Next
+        wsReturn.Range("A1").Offset(r, 13) = wsReasons.Range("A2").Offset(reason Mod 8, reason Mod 3)
+        
+        r = r + 1
+    Next
+
+End Sub
+

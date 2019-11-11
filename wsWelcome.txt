@@ -1,0 +1,21 @@
+Option Explicit
+
+Private Sub cmdGenerateReport_Click()
+frmReport.Show
+End Sub
+
+Private Sub cmdViewReturn_Click()
+ActiveWorkbook.Sheets("ReturnDatabase").Visible = xlSheetVisible
+ActiveWorkbook.Sheets("ReturnDatabase").Protect AllowSorting:=True, AllowFiltering:=True
+ActiveWorkbook.Sheets("Welcome").Visible = xlSheetHidden
+End Sub
+
+Private Sub cmdXLNewReturn_Click()
+frmReturnReason.Show
+End Sub
+
+
+Private Sub CommandButton1_Click()
+
+End Sub
+

@@ -1,0 +1,91 @@
+Option Explicit
+Dim i As Integer
+
+
+
+
+
+Private Sub cboMainReason_Change()
+'Fill Secondary Reason
+Call fillSecondaryReason
+End Sub
+
+Private Sub cboProduct_Change()
+' Now fill up the secondary reason field as well
+Call fillSecondaryReason
+End Sub
+
+Private Sub cmdAddmore_Click()
+frmUser.Enabled = False
+cmdValidate.Enabled = False
+txtOrderID.Enabled = False
+txtPhNo.Enabled = False
+lblOrderId.Enabled = False
+lblPhoneNumber.Enabled = False
+Call SaveData
+cboProduct.SetFocus
+End Sub
+
+Private Sub cmdCancel_Click()
+Unload Me
+End Sub
+
+Private Sub cmdSave_Click()
+Call SaveData
+Unload Me
+End Sub
+
+Private Sub cmdValidate_Click()
+Call validate
+End Sub
+
+
+
+Sub fillSecondaryReason()
+
+If Not IsEmpty(ReasonsArray) Then
+    If (cboMainReason.Text <> "") Then
+    cboDetailedReason.Clear
+    For i = 0 To UBound(ReasonsArray, 2)
+    cboDetailedReason.AddItem ReasonsArray((cboMainReason.ListIndex), i)
+    Next
+    cboDetailedReason.Text = cboDetailedReason.List(0)
+    End If
+End If
+
+End Sub
+
+Private Sub cmdReset_Click()
+
+    Dim ctl As MSForms.Control
+
+    For Each ctl In Me.Controls
+        Select Case TypeName(ctl)
+            Case "TextBox"
+                ctl.Text = ""
+            Case "CheckBox", "OptionButton", "ToggleButton"
+                ctl.Value = False
+            Case "ComboBox", "ListBox"
+                ctl.ListIndex = -1
+        End Select
+    Next ctl
+    frmProduct.Enabled = False
+    frameReturnReason.Enabled = False
+    
+
+End Sub
+
+
+
+Private Sub frmUser_Click()
+
+End Sub
+
+Private Sub UserForm_Activate()
+Call cmdReset_Click
+
+End Sub
+
+
+
+

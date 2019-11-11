@@ -1,0 +1,263 @@
+Option Explicit
+Dim cn As ADODB.Connection
+Dim rsValidateUser, rsReasons As ADODB.Recordset
+Dim strFile, strConn, strSQL As String
+Dim n, i As Integer
+Public ReasonsArray, detailedReasonItem, ProductArray As Variant
+Dim isValid As Boolean
+
+Sub validate()
+
+isValid = False
+Call OpenConnection
+
+'Validate User and Fill up the Product ComboBox on validation
+'Using excel worksheets as table for utilizing sql
+Set rsValidateUser = CreateObject("ADODB.Recordset")
+strSQL = "Select * FROM [MasterSalesDatabase$] " & _
+            "Where [Order ID] = " & "'" & frmReturnReason.txtOrderID.Text & "'" & _
+             " and [Phone Number] = " & "'" & frmReturnReason.txtPhNo.Text & "'"
+rsValidateUser.Open strSQL, cn, adOpenStatic, adLockOptimistic, adCmdText
+If (rsValidateUser.RecordCount <= 0) Then
+    MsgBox "Order ID, Phone number Combination Not Valid", vbCritical
+Else
+    isValid = True
+    ProductArray = rsValidateUser.GetRows 'Store the resultset in an array for later manipulation
+    rsValidateUser.MoveFirst
+    Do Until rsValidateUser.EOF
+    frmReturnReason.cboProduct.AddItem rsValidateUser.Fields.Item("Product ID") & "-" & rsValidateUser.Fields.Item("Product Description")
+    rsValidateUser.MoveNext
+    Loop
+    'Set the combo Box to show the first value
+    frmReturnReason.cboProduct.Text = frmReturnReason.cboProduct.List(0)
+End If
+
+rsValidateUser.Close
+
+If (isValid) Then
+    'Now Let's fill up the Reason combo boxes
+    Set rsReasons = CreateObject("ADODB.Recordset")
+    strSQL = "Select * FROM [ReasonsDatabase$] "
+    rsReasons.Open strSQL, cn, adOpenStatic, adLockOptimistic, adCmdText
+    
+    'Dynamically let's get the column name and fill up the first combo Box for reason
+    For n = 0 To rsReasons.Fields.Count - 2
+         frmReturnReason.cboMainReason.AddItem rsReasons.Fields(n).Name
+    Next n
+    'Set the combo Box to show the first value
+    frmReturnReason.cboMainReason.Text = frmReturnReason.cboMainReason.List(0)
+    rsReasons.MoveFirst
+    ReasonsArray = rsReasons.GetRows
+    rsReasons.Close
+    Call frmReturnReason.fillSecondaryReason
+    frmReturnReason.frmProduct.Enabled = True
+    frmReturnReason.frameReturnReason.Enabled = True
+End If
+Call CloseConnection
+End Sub
+
+Sub OpenConnection()
+
+strFile = ThisWorkbook.FullName
+strConn = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" & strFile _
+& ";Extended Properties=""Excel 12.0;HDR=Yes;IMEX=1"";"
+Set cn = CreateObject("ADODB.Connection")
+cn.Open strConn
+End Sub
+
+Sub CloseConnection()
+cn.Close
+End Sub
+
+Public Sub SaveData()
+
+    Dim ws As Worksheet
+    Dim LastRow As Long
+    Dim LastRange As Range
+    Dim n As Integer 'n returns the index of the product array which matches the product ID
+    
+    Dim WrdArray() As String
+    WrdArray() = Split(frmReturnReason.cboProduct.Text, "-")
+    n = returnProdIndex(WrdArray(0))
+    
+    Set ws = ThisWorkbook.Sheets("ReturnDatabase")
+    'find out if there is already a return record
+    Dim orderIDColumn, orderIDCell As Range
+    Set orderIDColumn = ws.Range("B5", ws.Range("B5").End(xlDown))
+    
+    For Each orderIDCell In orderIDColumn
+        If (orderIDCell.Value = ProductArray(0, n)) And (orderIDCell.Offset(0, 2) = ProductArray(2, n)) Then
+            MsgBox ("Return information exists.")
+        Exit Sub
+        End If
+
+    Next
+    
+    LastRow = ws.Range("A" & Rows.Count).End(xlUp).Row
+    
+    Set LastRange = ws.Range("A" & LastRow + 1)
+    
+    ThisWorkbook.Sheets("ReturnDatabase").Unprotect
+    'Conidering the Users email in column A, users phone in column B and users name in column C
+    LastRange = Date
+    LastRange.Offset(0, 1) = frmReturnReason.txtOrderID
+    LastRange.Offset(0, 2) = ProductArray(1, n)
+    LastRange.Offset(0, 3) = ProductArray(2, n)
+    LastRange.Offset(0, 4) = ProductArray(3, n)
+    LastRange.Offset(0, 5) = ProductArray(9, n)
+    LastRange.Offset(0, 6) = ProductArray(10, n)
+    LastRange.Offset(0, 7) = frmReturnReason.txtPhNo.Text
+    LastRange.Offset(0, 8) = frmReturnReason.cboMainReason.Text
+    LastRange.Offset(0, 9) = frmReturnReason.cboDetailedReason.Text
+    LastRange.Offset(0, 10) = frmReturnReason.txtComments.Text
+    ThisWorkbook.Sheets("ReturnDatabase").Protect AllowSorting:=True, AllowFiltering:=True
+    MsgBox "Return Saved", vbInformation
+End Sub
+
+Function returnProdIndex(ProdID As String) As Integer
+Dim i As Integer
+
+    For i = 0 To UBound(ProductArray, 2)
+    If (StrComp(ProductArray(2, i), ProdID, vbTextCompare) = 0) Then Exit For
+    Next
+returnProdIndex = i
+End Function
+
+
+Public Function PDFActiveSheet(isAskFolder As Boolean)
+
+Dim wsA As Worksheet
+Dim wbA As Workbook
+Dim ret As Integer
+Dim strTime As String
+Dim strName As String
+Dim strPath As String
+Dim strFile As String
+Dim strPathFile As String
+Dim myFile As String
+Dim Rng As Range
+On Error GoTo errHandler
+
+Set wbA = ActiveWorkbook
+Set wsA = ActiveSheet
+strTime = Format(Now(), "yyyymmdd\_hhmm")
+
+wsA.Unprotect
+  
+  Set Rng = ActiveSheet.UsedRange
+  'SetupRangeData rng
+  
+'Set the pagesetup
+
+Call Wsh_Print_Setting_OnePage(Rng, xlPaperEsheet)
+
+'get active workbook folder, if saved
+strPath = wbA.Path
+If strPath = "" Then
+  strPath = Application.DefaultFilePath
+End If
+strPath = strPath & "\"
+
+'replace spaces and periods in sheet name
+strName = Replace(wsA.Name, " ", "")
+strName = Replace(strName, ".", "_")
+
+'create default name for savng file
+strFile = strName & "_" & strTime & ".pdf"
+strPathFile = strPath & strFile
+
+'use can enter name and
+' select folder for file
+If (isAskFolder = True) Then
+myFile = Application.GetSaveAsFilename _
+    (InitialFileName:=strPathFile, _
+        FileFilter:="PDF Files (*.pdf), *.pdf", _
+        Title:="Select Folder and FileName to save")
+Else
+myFile = strPathFile
+End If
+
+'export to PDF if a folder was selected
+If myFile <> "False" Then
+    Rng.ExportAsFixedFormat _
+        Type:=xlTypePDF, _
+        filename:=myFile, _
+        Quality:=xlQualityStandard, _
+        IncludeDocProperties:=True, _
+        IgnorePrintAreas:=False, _
+        OpenAfterPublish:=False
+    'confirmation message with file info
+    MsgBox "PDF file has been created: " _
+      & vbCrLf _
+      & myFile
+End If
+wsA.Protect AllowSorting:=True, AllowFiltering:=True
+'Call SendEmail("biplab7@gmail.com", myFile)
+PDFActiveSheet = myFile
+
+exitHandler:
+    Exit Function
+errHandler:
+    wsA.Protect AllowSorting:=True, AllowFiltering:=True
+    MsgBox "Could not create PDF file"
+    Resume exitHandler
+End Function
+
+
+Sub Wsh_Print_Setting_OnePage(WshTrg As Range, ePaperSize As XlPaperSize)
+On Error Resume Next
+    Application.PrintCommunication = False
+    With ActiveSheet.PageSetup
+        .LeftMargin = Application.InchesToPoints(0)
+        .RightMargin = Application.InchesToPoints(0)
+        .TopMargin = Application.InchesToPoints(0)
+        .BottomMargin = Application.InchesToPoints(0)
+        .HeaderMargin = Application.InchesToPoints(0)
+        .FooterMargin = Application.InchesToPoints(0)
+        '.Orientation = xlLandscape
+        .Orientation = xlPortrait
+        .PaperSize = ePaperSize
+        .Zoom = False
+        .FitToPagesWide = 1
+        .FitToPagesTall = 100
+    End With
+    Application.PrintCommunication = True
+End Sub
+
+Sub SendEmail(emailaddr As String, filename As String)
+
+Dim objOutlook As Outlook.Application
+Dim objOutlookMsg As Outlook.MailItem
+Dim objOutlookRecip As Outlook.recipient
+Dim objOutlookAttach As Outlook.Attachment
+Dim WeekendingDate As Date
+Dim DisplayMsg As Boolean
+
+DisplayMsg = False
+
+Set objOutlook = CreateObject("Outlook.Application")
+Set objOutlookMsg = objOutlook.CreateItem(olMailItem)
+
+With objOutlookMsg
+    Set objOutlookRecip = .Recipients.Add("biplab7@gmail.com")
+    objOutlookRecip.Type = olTo
+   .Subject = "Return Report " & WeekendingDate
+   .Body = "Please find attached the report of the returned items"
+'Add attachments to the message [some code]
+   .Attachments.Add filename
+   For Each objOutlookRecip In .Recipients
+       objOutlookRecip.Resolve
+   Next
+   If DisplayMsg Then
+       .Display
+   Else
+       .Save
+   End If
+End With
+Set objOutlook = Nothing
+End Sub
+
+
+
+
+

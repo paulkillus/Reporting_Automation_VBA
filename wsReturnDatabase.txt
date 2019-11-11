@@ -1,0 +1,29 @@
+Option Explicit
+
+Private Sub cmdEditReturn_Click()
+If (cmdEditReturn.Caption = "Edit Return") Then
+ActiveWorkbook.Sheets("ReturnDatabase").Unprotect
+cmdEditReturn.Caption = "Done Editing"
+Else
+cmdEditReturn.Caption = "Edit Return"
+ActiveWorkbook.Sheets("ReturnDatabase").Protect AllowSorting:=True, AllowFiltering:=True
+End If
+
+End Sub
+
+Private Sub cmdReturn_Click()
+frmReturnReason.Show
+End Sub
+
+Private Sub cmdSaveAsPdf_Click()
+Dim filename As String
+filename = PDFActiveSheet(True)
+End Sub
+
+Private Sub cmdWelcome_Click()
+ActiveWorkbook.Sheets("Welcome").Visible = xlSheetVisible
+ActiveWorkbook.Sheets("ReturnDatabase").Visible = xlSheetHidden
+End Sub
+
+
+
