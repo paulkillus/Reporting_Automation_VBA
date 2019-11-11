@@ -17,7 +17,7 @@ The __View Return__ page demostrates a table of return data, including Date, Ord
 
 The __Generate Report__ form allows the user the choose three kinds of reports: Overview, Detail, and Vendor Specific report.
 
-After clicking "__Generate Report__" Button, the application will generate a new excel file with a list of charts that is ready to be printed or saved as a PDF file.
+After clicking "__Generate Report__" Button of the Generate Report form, the application will generate a new excel file with a list of charts that is ready to be printed or saved as a PDF file.
 
 The demostrated files contain pseudonymised data to protect the client's infomation.
 
