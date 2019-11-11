@@ -1,4 +1,4 @@
-# Reporting_Automation_VBA
+# An Excel VBA Application Creating Reports Showing the Reasons of Product Returns
 
 ## 1. Overview
 The Excel application was built to automate the process that the analyst needs to do every day - to import the data of returns, analyse the reason of returns, and make charts to show where the problem is and how to fix it.
