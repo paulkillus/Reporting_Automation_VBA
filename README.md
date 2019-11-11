@@ -1,7 +1,7 @@
 # Reporting_Automation_VBA
 
 ## 1. Overview
-The Excel application was built to automate the process that the analyst needs to do everyday - to import the data of returns, analyse the reason of returns, and make charts to show where the problem is and how to fix it.
+The Excel application was built to automate the process that the analyst needs to do every day - to import the data of returns, analyse the reason of returns, and make charts to show where the problem is and how to fix it.
 
 The reports contain 2-10 pages with bar/pie charts and tables that are created from pivot tables of different dimentions. The report formats can be modified easily using Excel's pivot table and chart tools.
 
